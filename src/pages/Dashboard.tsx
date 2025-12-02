@@ -42,7 +42,7 @@ export const DashboardPage = () => {
                 Welcome back{user?.name ? `, ${user.name}` : ''}!
               </h1>
               <p className="text-blue-100">
-                You're successfully signed in to the application
+                You're successfully signed in to the Easygenerator Task
               </p>
             </div>
             <Button
