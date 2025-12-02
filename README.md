@@ -2,7 +2,21 @@
 
 > A modern, production-ready authentication frontend built with React, TypeScript, Vite, and TanStack Query. Featuring comprehensive form validation, responsive design, and best-in-class developer experience.
 
-[![CI/CD](https://img.shields.io/github/actions/workflow/status/YOUR_USERNAME/auth-client/ci-cd.yml?branch=main&label=CI%2FCD&logo=github)](https://github.com/YOUR_USERNAME/auth-client/actions)
+<div align="center">
+
+### 🌐 Live Demo
+
+|                 | URL                                                                            |
+| --------------- | ------------------------------------------------------------------------------ |
+| 🖥️ **Frontend** | [https://mtauth.online](https://mtauth.online)                                 |
+| 🔌 **API**      | [https://api.mtauth.online/api/v1](https://api.mtauth.online/api/v1)           |
+| 📚 **API Docs** | [https://api.mtauth.online/api/v1/docs](https://api.mtauth.online/api/v1/docs) |
+
+</div>
+
+---
+
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/MhmodTayel/auth-client/ci-cd.yml?branch=master&label=CI%2FCD&logo=github)](https://github.com/MhmodTayel/auth-client/actions)
 [![Tests](https://img.shields.io/badge/tests-147%20passing-success)](.)
 [![React](https://img.shields.io/badge/React-19.2-61dafb?logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
@@ -278,54 +292,81 @@ npm run prepare          # Install Husky hooks
 
 ## 🔄 CI/CD Pipeline
 
-### GitHub Actions Workflow
+### Automated Deployment to Production
 
-Automated CI/CD pipeline runs on every push and pull request:
+**Live Application:** [https://mtauth.online](https://mtauth.online)
 
-**Workflow Jobs:**
+Every push to `main` or `master` branch triggers automatic deployment to production:
+
+**Pipeline Stages:**
 
 1. **Lint & Code Quality** ✨
    - ESLint code quality checks
    - Prettier formatting verification
    - TypeScript compilation check
-   - Commit message validation (PRs only)
 
 2. **Unit Tests** 🧪
    - Runs on Node 18.x & 20.x
    - Executes 147 test cases
    - Generates coverage reports
    - Uploads to Codecov
-   - Checks coverage thresholds
 
-3. **Build** 📦
-   - TypeScript compilation
-   - Vite production build
-   - Build size analysis
-   - Artifact archiving
+3. **Build & Push Docker Image** 📦
+   - Builds production Docker image with Nginx
+   - Configures API URL to `/api/v1` for reverse proxy
+   - Pushes to GitHub Container Registry (ghcr.io)
+   - Caches layers for faster builds
 
-4. **Preview Build** 👀 (PR only)
-   - Downloads build artifacts
-   - Analyzes build size
-   - Comments on PR with build info
+4. **Deploy to EC2** 🚀
+   - SSHs into production server (mtauth.online)
+   - Pulls latest Docker image
+   - Restarts frontend service
+   - Restarts Nginx reverse proxy
+   - Runs health checks
+   - Verifies deployment
 
-### Running Locally
+### Deployment Flow
+
+```
+Developer Push → GitHub Actions → Docker Build → GHCR → EC2 → Live (mtauth.online)
+    ↓              ✅ Tests      ✅ Image     Push   Deploy   ✅ Verified
+  main branch      ✅ Lint
+                   ✅ Build
+```
+
+### Running CI Checks Locally
 
 ```bash
 # Run the full CI pipeline locally
 npm run lint          # Linting
 npm run format:check  # Formatting check
 npx tsc --noEmit     # Type checking
-npm test             # Unit tests
+npm test -- --run    # Unit tests
 npm run build        # Production build
 ```
 
-### Continuous Deployment
+### Production Architecture
 
-When code is merged to `main`:
+```
+User Request (mtauth.online)
+         ↓
+    Nginx (Port 80/443)
+         ↓
+    ┌────────────┐
+    │   Reverse  │
+    │   Proxy    │
+    └────┬───────┘
+         ├─→ Frontend (/) → React App (Docker)
+         └─→ Backend (/api/v1) → NestJS API (Docker)
+```
 
-- All tests must pass
-- Build must succeed
-- Can be automatically deployed to hosting platform
+### GitHub Secrets Configuration
+
+For automated deployment, these secrets are configured:
+
+- `EC2_HOST`: mtauth.online
+- `EC2_USER`: ubuntu
+- `EC2_SSH_KEY`: Private SSH key for EC2 access
 
 ---
 
