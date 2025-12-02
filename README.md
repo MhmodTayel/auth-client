@@ -2,6 +2,8 @@
 
 > A modern, production-ready authentication frontend built with React, TypeScript, Vite, and TanStack Query. Featuring comprehensive form validation, responsive design, and best-in-class developer experience.
 
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/YOUR_USERNAME/auth-client/ci-cd.yml?branch=main&label=CI%2FCD&logo=github)](https://github.com/YOUR_USERNAME/auth-client/actions)
+[![Tests](https://img.shields.io/badge/tests-147%20passing-success)](.)
 [![React](https://img.shields.io/badge/React-19.2-61dafb?logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-7.2-646cff?logo=vite)](https://vitejs.dev/)
@@ -193,6 +195,59 @@ npm run prepare          # Install Husky hooks
 
 - Enforces commit message format
 - Improves changelog generation
+
+---
+
+## 🔄 CI/CD Pipeline
+
+### GitHub Actions Workflow
+
+Automated CI/CD pipeline runs on every push and pull request:
+
+**Workflow Jobs:**
+
+1. **Lint & Code Quality** ✨
+   - ESLint code quality checks
+   - Prettier formatting verification
+   - TypeScript compilation check
+   - Commit message validation (PRs only)
+
+2. **Unit Tests** 🧪
+   - Runs on Node 18.x & 20.x
+   - Executes 147 test cases
+   - Generates coverage reports
+   - Uploads to Codecov
+   - Checks coverage thresholds
+
+3. **Build** 📦
+   - TypeScript compilation
+   - Vite production build
+   - Build size analysis
+   - Artifact archiving
+
+4. **Preview Build** 👀 (PR only)
+   - Downloads build artifacts
+   - Analyzes build size
+   - Comments on PR with build info
+
+### Running Locally
+
+```bash
+# Run the full CI pipeline locally
+npm run lint          # Linting
+npm run format:check  # Formatting check
+npx tsc --noEmit     # Type checking
+npm test             # Unit tests
+npm run build        # Production build
+```
+
+### Continuous Deployment
+
+When code is merged to `main`:
+
+- All tests must pass
+- Build must succeed
+- Can be automatically deployed to hosting platform
 
 ---
 
