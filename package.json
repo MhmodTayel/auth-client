@@ -15,7 +15,14 @@
     "lint-staged": "lint-staged",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up",
+    "docker:dev:build": "docker-compose -f docker-compose.dev.yml up --build",
+    "docker:dev:down": "docker-compose -f docker-compose.dev.yml down",
+    "docker:prod": "docker-compose up",
+    "docker:prod:build": "docker-compose up --build",
+    "docker:prod:down": "docker-compose down",
+    "docker:clean": "docker-compose down -v && docker-compose -f docker-compose.dev.yml down -v"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

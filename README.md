@@ -69,6 +69,84 @@ npm run dev
 # ✅ App ready at http://localhost:5173
 ```
 
+**Option 2: Docker (Recommended)**
+
+```bash
+# Development mode with hot reload
+npm run docker:dev
+
+# That's it! 🎉
+# App: http://localhost:5173
+```
+
+**Option 3: Docker Production**
+
+```bash
+# Production mode with Nginx
+npm run docker:prod
+
+# App: http://localhost:3001
+```
+
+---
+
+## 🐳 Docker Deployment
+
+### Development Mode
+
+```bash
+# Start with hot reload
+npm run docker:dev
+
+# Build and start
+npm run docker:dev:build
+
+# Stop
+npm run docker:dev:down
+```
+
+### Production Mode
+
+```bash
+# Start with Nginx
+npm run docker:prod
+
+# Build and start
+npm run docker:prod:build
+
+# Stop
+npm run docker:prod:down
+
+# Clean up volumes
+npm run docker:clean
+```
+
+### What's Running?
+
+**Development:**
+
+- **Frontend Dev**: `localhost:5173` (Vite with HMR)
+- **Hot Reload**: Source code mounted as volume
+- **Container**: Lightweight Node.js Alpine
+
+**Production:**
+
+- **Frontend**: `localhost:3001` (Nginx server)
+- **Health Check**: Automatic container monitoring
+- **Optimized**: Multi-stage build, gzipped assets
+- **Container**: Lightweight Nginx Alpine
+
+### Docker Files
+
+```
+Dockerfile          # Production build with Nginx
+Dockerfile.dev      # Development with hot reload
+docker-compose.yml  # Production configuration
+docker-compose.dev.yml  # Development configuration
+nginx.conf         # Nginx server configuration
+.dockerignore      # Files to exclude from build
+```
+
 ---
 
 ## 🔧 Configuration
