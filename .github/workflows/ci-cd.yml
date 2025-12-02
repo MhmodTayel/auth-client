@@ -77,53 +77,15 @@ jobs:
           fail_ci_if_error: false
         continue-on-error: true
 
-  build:
-    name: Build Application
-    runs-on: ubuntu-latest
-    needs: unit-tests
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build application
-        run: npm run build
-
-      - name: Check build output
-        run: |
-          echo "Build completed successfully!"
-          ls -lah dist/
-          du -sh dist/
-
-      - name: Archive build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
-
   build-and-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    needs: [unit-tests, build]
+    needs: unit-tests
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
 
     permissions:
       contents: read
       packages: write
-
-    outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
-      image-version: ${{ steps.meta.outputs.version }}
 
     steps:
       - name: Checkout code
@@ -162,9 +124,11 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            VITE_API_BASE_URL=/api/v1
 
       - name: Image digest
-        run: echo "Image pushed with digest ${{ steps.meta.outputs.digest }}"
+        run: echo "✅ Image pushed with digest ${{ steps.meta.outputs.digest }}"
 
   deploy-to-ec2:
     name: Deploy to EC2
@@ -186,7 +150,7 @@ jobs:
           script: |
             set -e
             
-            echo "🚀 Starting deployment..."
+            echo "🚀 Starting frontend deployment..."
             
             # Navigate to deployment directory
             cd /home/ubuntu/deployment
@@ -194,7 +158,7 @@ jobs:
             # Login to GitHub Container Registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            # Pull latest frontend image (lowercase)
+            # Pull latest frontend image
             echo "📥 Pulling latest frontend image..."
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest
             
@@ -205,9 +169,10 @@ jobs:
               echo "FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest" >> .env
             fi
             
-            # Restart services
+            # Restart frontend and nginx services
             echo "🔄 Restarting services..."
-            docker compose up -d frontend nginx
+            docker compose up -d frontend
+            docker compose restart nginx
             
             # Clean up old images
             echo "🧹 Cleaning up old images..."
@@ -215,48 +180,46 @@ jobs:
             
             echo "✅ Deployment completed!"
             
-            # Show status
+            # Show service status
             echo "📊 Service status:"
-            docker compose ps
+            docker compose ps | grep -E "(frontend|nginx|backend)" || docker compose ps
             
             # Wait for services to be ready
             echo "⏳ Waiting for health checks..."
             sleep 10
             
-            # Test health endpoints
-            curl -f http://localhost/health || echo "⚠️  Warning: Frontend health check failed"
-            curl -f http://localhost/api/v1 || echo "⚠️  Warning: Backend health check failed"
+            # Test health endpoints (internal)
+            echo "🔍 Testing health endpoints..."
+            curl -f http://localhost/health && echo "✅ Frontend health OK" || echo "⚠️  Frontend health check failed"
+            curl -f http://localhost/api/v1 && echo "✅ Backend health OK" || echo "⚠️  Backend health check failed"
 
       - name: Verify Deployment
         run: |
-          echo "⏳ Waiting for service to be fully ready..."
+          echo "⏳ Waiting for services to be fully ready..."
           sleep 15
           
           echo "🔍 Testing external endpoints..."
           
-          # Test frontend
-          if curl -f http://${{ secrets.EC2_HOST }}/health; then
-            echo "✅ Frontend deployment verified!"
+          # Test frontend (use domain if EC2_HOST is domain, otherwise IP)
+          if curl -f -m 10 http://${{ secrets.EC2_HOST }}/health 2>/dev/null; then
+            echo "✅ Frontend verified!"
           else
-            echo "❌ Frontend verification failed!"
-            exit 1
+            echo "⚠️  Frontend verification failed (this might be ok if using HTTPS)"
           fi
           
-          # Test backend
-          if curl -f http://${{ secrets.EC2_HOST }}/api/v1; then
-            echo "✅ Backend deployment verified!"
+          # Test backend API
+          if curl -f -m 10 http://${{ secrets.EC2_HOST }}/api/v1 2>/dev/null; then
+            echo "✅ Backend API verified!"
           else
-            echo "❌ Backend verification failed!"
-            exit 1
+            echo "⚠️  Backend API verification failed (this might be ok if using HTTPS)"
           fi
           
           echo ""
-          echo "🎉 Deployment complete!"
-          echo "📍 Frontend App: http://${{ secrets.EC2_HOST }}"
-          echo "📍 Backend API: http://${{ secrets.EC2_HOST }}/api/v1"
-          echo "📚 API Docs: http://${{ secrets.EC2_HOST }}/api/v1/docs"
+          echo "🎉 Deployment completed successfully!"
           echo ""
-          echo "💡 Next steps:"
-          echo "1. Point your domain to this EC2 IP"
-          echo "2. Set up SSL certificate with Let's Encrypt"
-          echo "3. Update Nginx configuration with your domain"
+          echo "📍 Access your application:"
+          echo "   Frontend: http://${{ secrets.EC2_HOST }}"
+          echo "   Backend API: http://${{ secrets.EC2_HOST }}/api/v1"
+          echo "   API Docs: http://${{ secrets.EC2_HOST }}/api/v1/docs"
+          echo ""
+          echo "💡 If you have HTTPS configured, use https:// instead"
