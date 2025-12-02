@@ -186,7 +186,7 @@ jobs:
           script: |
             set -e
             
-            echo "🚀 Starting frontend deployment..."
+            echo "🚀 Starting deployment..."
             
             # Navigate to deployment directory
             cd /home/ubuntu/deployment
@@ -195,50 +195,68 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Pull latest frontend image (lowercase)
-            echo "📥 Pulling latest image..."
+            echo "📥 Pulling latest frontend image..."
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest
             
-            # Update .env with new image
+            # Update .env with new frontend image
             if grep -q "FRONTEND_IMAGE=" .env; then
               sed -i "s|FRONTEND_IMAGE=.*|FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest|" .env
             else
               echo "FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest" >> .env
             fi
             
-            # Restart frontend service
-            echo "🔄 Restarting frontend service..."
-            docker compose up -d frontend
+            # Restart services
+            echo "🔄 Restarting services..."
+            docker compose up -d frontend nginx
             
             # Clean up old images
             echo "🧹 Cleaning up old images..."
             docker image prune -af --filter "until=24h" || true
             
-            echo "✅ Frontend deployment completed!"
+            echo "✅ Deployment completed!"
             
             # Show status
             echo "📊 Service status:"
             docker compose ps
             
-            # Wait for service to be ready
-            echo "⏳ Waiting for service health check..."
-            sleep 5
+            # Wait for services to be ready
+            echo "⏳ Waiting for health checks..."
+            sleep 10
             
-            # Test frontend health
-            curl -f http://localhost:3001/health || echo "⚠️  Warning: Health check failed"
+            # Test health endpoints
+            curl -f http://localhost/health || echo "⚠️  Warning: Frontend health check failed"
+            curl -f http://localhost/api/v1 || echo "⚠️  Warning: Backend health check failed"
 
       - name: Verify Deployment
         run: |
           echo "⏳ Waiting for service to be fully ready..."
-          sleep 10
+          sleep 15
           
-          echo "🔍 Testing external endpoint..."
-          if curl -f http://${{ secrets.EC2_HOST }}:3001/health; then
-            echo "✅ Deployment verified successfully!"
-            echo ""
-            echo "🎉 Deployment complete!"
-            echo "📍 Frontend App: http://${{ secrets.EC2_HOST }}:3001"
+          echo "🔍 Testing external endpoints..."
+          
+          # Test frontend
+          if curl -f http://${{ secrets.EC2_HOST }}/health; then
+            echo "✅ Frontend deployment verified!"
           else
-            echo "❌ Deployment verification failed!"
-            echo "Please check EC2 logs: ssh ubuntu@${{ secrets.EC2_HOST }} 'cd /home/ubuntu/deployment && docker compose logs frontend'"
+            echo "❌ Frontend verification failed!"
             exit 1
           fi
+          
+          # Test backend
+          if curl -f http://${{ secrets.EC2_HOST }}/api/v1; then
+            echo "✅ Backend deployment verified!"
+          else
+            echo "❌ Backend verification failed!"
+            exit 1
+          fi
+          
+          echo ""
+          echo "🎉 Deployment complete!"
+          echo "📍 Frontend App: http://${{ secrets.EC2_HOST }}"
+          echo "📍 Backend API: http://${{ secrets.EC2_HOST }}/api/v1"
+          echo "📚 API Docs: http://${{ secrets.EC2_HOST }}/api/v1/docs"
+          echo ""
+          echo "💡 Next steps:"
+          echo "1. Point your domain to this EC2 IP"
+          echo "2. Set up SSL certificate with Let's Encrypt"
+          echo "3. Update Nginx configuration with your domain"
