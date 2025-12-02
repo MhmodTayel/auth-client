@@ -9,7 +9,10 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "prepare": "husky",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
