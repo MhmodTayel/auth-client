@@ -24,14 +24,3 @@ export const VALIDATION_MESSAGES = {
   PASSWORD_PATTERN:
     'Password must contain at least one letter, one number, and one special character',
 } as const;
-
-export const queryKeys = {
-  auth: {
-    all: ['auth'] as const,
-    healthCheck: () => [...queryKeys.auth.all, 'health'] as const,
-  },
-  user: {
-    all: ['user'] as const,
-    profile: () => [...queryKeys.user.all, 'profile'] as const,
-  },
-} as const;

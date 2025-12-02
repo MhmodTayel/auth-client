@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/api/auth.api';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
-import { ROUTES, queryKeys } from '@/utils/constants';
+import { ROUTES } from '@/utils/constants';
+import { queryKeys } from '@/api/query-client';
 import type { SignUpData, SignInData } from '@/types/auth.types';
 import { getErrorMessage } from '@/api/axios';
 

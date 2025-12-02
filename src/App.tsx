@@ -1,34 +1,60 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ROUTES } from '@/utils/constants';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { PublicRoute } from '@/components/auth/PublicRoute';
+import { Layout } from '@/components/auth/layout/Layout';
+import { AuthLayout } from '@/components/auth/layout/AuthLayout';
+import { SignInPage } from '@/pages/SignIn';
+import { SignUpPage } from '@/pages/SignUp';
+import { DashboardPage } from '@/pages/Dashboard';
+import { NotFoundPage } from '@/pages/NotFound';
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <BrowserRouter>
+      <Routes>
+        {/* Public routes with auth layout */}
+        <Route element={<AuthLayout />}>
+          <Route
+            path={ROUTES.SIGN_IN}
+            element={
+              <PublicRoute>
+                <SignInPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path={ROUTES.SIGN_UP}
+            element={
+              <PublicRoute>
+                <SignUpPage />
+              </PublicRoute>
+            }
+          />
+        </Route>
+
+        {/* Protected routes with main layout */}
+        <Route element={<Layout />}>
+          <Route
+            path={ROUTES.DASHBOARD}
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+
+        {/* Root redirect */}
+        <Route
+          path={ROUTES.HOME}
+          element={<Navigate to={ROUTES.SIGN_IN} replace />}
+        />
+
+        {/* 404 catch-all */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
