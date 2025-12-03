@@ -3,7 +3,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
-import { User, Mail, Calendar, LogOut } from 'lucide-react';
+import { User, Mail, Calendar, LogOut, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '@/utils/constants';
 
 export const DashboardPage = () => {
   const { user, isLoading, isError, error } = useUser();
@@ -42,17 +44,28 @@ export const DashboardPage = () => {
                 Welcome back{user?.name ? `, ${user.name}` : ''}!
               </h1>
               <p className="text-blue-100">
-                You're successfully signed in to the Easygenerator Task
+                You're successfully signed in to the application
               </p>
             </div>
-            <Button
-              onClick={logout}
-              variant="outline"
-              className="bg-white/10 text-white border-white/30 hover:bg-white/20"
-            >
-              <LogOut size={18} className="mr-2" />
-              Logout
-            </Button>
+            <div className="flex gap-3">
+              <Link to={ROUTES.PROFILE}>
+                <Button
+                  variant="outline"
+                  className="bg-white/10 text-white border-white/30 hover:bg-white/20"
+                >
+                  <Settings size={18} className="mr-2" />
+                  Profile Settings
+                </Button>
+              </Link>
+              <Button
+                onClick={logout}
+                variant="outline"
+                className="bg-white/10 text-white border-white/30 hover:bg-white/20"
+              >
+                <LogOut size={18} className="mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
 

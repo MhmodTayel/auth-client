@@ -3,7 +3,6 @@ import { userApi } from '@/api/user.api';
 import { queryKeys } from '@/api/query-client';
 import { storage } from '@/utils/storage';
 import { logger } from '@/utils/logger';
-import type { UpdateProfileData, ChangePasswordData } from '@/types/auth.types';
 import { getErrorMessage } from '@/api/axios';
 
 export const useUser = () => {
@@ -46,13 +45,13 @@ export const useUser = () => {
     isError: userQuery.isError,
     error: userQuery.error,
 
-    updateProfile: (data: UpdateProfileData) =>
-      updateProfileMutation.mutate(data),
+    updateProfile: updateProfileMutation.mutate,
+    updateProfileAsync: updateProfileMutation.mutateAsync,
     isUpdatingProfile: updateProfileMutation.isPending,
     updateProfileError: updateProfileMutation.error,
 
-    changePassword: (data: ChangePasswordData) =>
-      changePasswordMutation.mutate(data),
+    changePassword: changePasswordMutation.mutate,
+    changePasswordAsync: changePasswordMutation.mutateAsync,
     isChangingPassword: changePasswordMutation.isPending,
     changePasswordError: changePasswordMutation.error,
   };

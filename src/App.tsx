@@ -7,6 +7,7 @@ import { AuthLayout } from '@/components/auth/layout/AuthLayout';
 import { SignInPage } from '@/pages/SignIn';
 import { SignUpPage } from '@/pages/SignUp';
 import { DashboardPage } from '@/pages/Dashboard';
+import { ProfilePage } from '@/pages/Profile';
 import { NotFoundPage } from '@/pages/NotFound';
 
 function App() {
@@ -40,6 +41,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.PROFILE}
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />
